@@ -23,6 +23,7 @@
  * - 2014-04-03: Initial internal release
  *
  * Open Topics / ToDo:
+ * - Add neat red and green phone icons during call or for missed phone calls
  */
 
 /**** INCLUDES *********************************/
@@ -143,19 +144,6 @@ void setup()
     espDelay(1000);
     tft.fillScreen(TFT_GREEN);
     espDelay(1000);
-
-    /*
-    tft.fillScreen(TFT_BLACK);
-    tft.setTextDatum(MC_DATUM);
-
-    tft.drawString("LeftButton:", tft.width() / 2, tft.height() / 2 - 16);      // hi
-    tft.drawString("[WiFi Scan]", tft.width() / 2, tft.height() / 2 );
-    tft.drawString("RightButton:", tft.width() / 2, tft.height() / 2 + 16);
-    tft.drawString("[Voltage Monitor]", tft.width() / 2, tft.height() / 2 + 32 );
-    tft.drawString("RightButtonLongPress:", tft.width() / 2, tft.height() / 2 + 48);
-    tft.drawString("[Deep Sleep]", tft.width() / 2, tft.height() / 2 + 64 );
-    tft.setTextDatum(TL_DATUM);
-    */
 }
 
 /**** METHOD: LCDSPLASH ************************/
