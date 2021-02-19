@@ -45,12 +45,13 @@
 #define LCD_MAX_CHARS 16                   // LCD max chars in one line
 #define LCD_ENABLE_DIM 0                   // If enabled, LCD backlight will only dim if unused. If disabled LCD backlight will turn off
 #define LCD_DIM_TIMEOUT 10000              // Timeout for display dimmer after DISCONNECT
+#define LCD_EN 4                           // ******
 #define DISPLAY_CALL_DURATION 1            // Enable or Disable display of call duration
 #define DEBUG 1                            // Enable serial debugging
 #define SERIAL_BAUD_RATE 115200            // Baud rate for serial communication
 #define PRICEPERMINUTE 0.025               // Price per minute in Euro
 #define CHECKCONNECTION 10000              // Milliseconds
-#define ADC_EN 14                          //ADC_EN is the ADC detection enable port
+#define ADC_EN 14                          // ADC_EN is the ADC detection enable port
 //#define ENABLE_DISPLAY_TIME 1
 /***********************************************/
 
@@ -148,7 +149,7 @@ void setup()
 /**** METHOD: LCDSPLASH ************************/
 void lcdsplash()
 {
-    tft.fillScreen(TFT_BLACK);
+    digitalWrite(LCD_EN, LOW);
     //tft.drawString("FB CallMonitor", tft.width() / 2, tft.height() / 2);
     //tft.drawString("www.ranger81.de:", tft.width() / 2, tft.height() / 2 + 16);
 }
@@ -167,6 +168,7 @@ void resetEthernet()
 /**** METHOD: LCDON ****************************/
 void lcdon()
 {
+    digitalWrite(LCD_EN, HIGH);
     tft.fillScreen(TFT_WHITE);
     tft.setTextDatum(MC_DATUM);
     tft.setTextSize(2);
