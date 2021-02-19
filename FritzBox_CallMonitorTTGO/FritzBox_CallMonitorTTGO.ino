@@ -107,9 +107,9 @@ void setup()
     missedcallcount = 0;
     lastcallwasmissedcall = 0;
 
-    pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
-    pinMode(CLEAR_MISSED_CALL_BUTTON_PIN, INPUT_PULLUP);
-    pinMode(MISSED_CALL_LED_PIN, OUTPUT);
+    //pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
+    //pinMode(CLEAR_MISSED_CALL_BUTTON_PIN, INPUT_PULLUP);
+    //pinMode(MISSED_CALL_LED_PIN, OUTPUT);
 
     lcdon();
     lcdsplash();
@@ -168,20 +168,12 @@ void setup()
     */
 }
 
-void tftclear()
-{
-    tft.fillScreen(TFT_BLACK);
-    tft.setTextDatum(MC_DATUM);
-    tft.setTextSize(2);
-    tft.setTextColor(TFT_GREEN);
-}
-
 /**** METHOD: LCDSPLASH ************************/
 void lcdsplash()
 {
-    tftclear();
-    tft.drawString("FB CallMonitor", tft.width() / 2, tft.height() / 2);
-    tft.drawString("www.ranger81.de:", tft.width() / 2, tft.height() / 2 + 16);
+    tft.fillScreen(TFT_BLACK);
+    //tft.drawString("FB CallMonitor", tft.width() / 2, tft.height() / 2);
+    //tft.drawString("www.ranger81.de:", tft.width() / 2, tft.height() / 2 + 16);
 }
 /***********************************************/
 /**** METHOD: RESETETHERNET ********************/
@@ -198,7 +190,10 @@ void resetEthernet()
 /**** METHOD: LCDON ****************************/
 void lcdon()
 {
-    //digitalWrite(LCD_BACKLIGHT_PIN, HIGH);
+    tft.fillScreen(TFT_WHITE);
+    tft.setTextDatum(MC_DATUM);
+    tft.setTextSize(2);
+    tft.setTextColor(TFT_BLACK);
 }
 /***********************************************/
 
@@ -215,7 +210,6 @@ void lcddim()
         {
             lcdsplash();
         }
-        //analogWrite(LCD_BACKLIGHT_PIN, LCD_DIM_PWM_VALUE);
     }
     else
     {
@@ -251,8 +245,8 @@ void lcdstartdim()
 void lcdconnecting()
 {
     lcdon();
-    tftclear();
-    tft.drawString("Connecting to FritzBox... ", tft.width() / 2, tft.height() / 2);
+    tft.drawString("Connecting to", tft.width() / 2, tft.height() / 2);
+    tft.drawString("FritzBox... ", tft.width() / 2, tft.height() / 2 + 16);
 }
 /***********************************************/
 
@@ -272,7 +266,7 @@ void missedcallledon(char *lastnr)
 void lcdmissedcall()
 {
     String callCountMessage = missedcallcount + String(" missed calls");
-    tftclear();
+    lcdon();
     tft.drawString(callCountMessage.c_str(), tft.width() / 2, tft.height() / 2);
     tft.drawString(lastmissednumber, tft.width() / 2, tft.height() / 2 + 16);
     lcdstartdim();
@@ -381,10 +375,10 @@ void WiFi_Setup()
     // so restart the ESP and connect your PC to the wireless access point called 'ESP_AP' or whatever you call it below in ""
     // wifiManager.resetSettings(); // Command to be included if needed, then connect to http://192.168.4.1/ and follow instructions to make the WiFi connection
     // Set a timeout until configuration is turned off, useful to retry or go to sleep in n-seconds
-    wifiManager.setHostname("Fritz!CallMonitor");
+    wifiManager.setHostname("FBCallMonitor");
     wifiManager.setTimeout(180);
     //fetches ssid and password and tries to connect, if connections succeeds it starts an access point with the name called "ESP8266_AP" and waits in a blocking loop for configuration
-    if (!wifiManager.autoConnect("Fritz!CallMonitor AP"))
+    if (!wifiManager.autoConnect("FBCallMonitor_AP"))
     {
         Serial.println(F("failed to connect and timeout occurred"));
         delay(6000);
@@ -493,7 +487,6 @@ void loop()
                                 missedcallledoff();
                             }
                             lastcallwasmissedcall = false;
-                            tftclear();
                             lcdon();
                             {
                                 char vbuff[6];
@@ -534,7 +527,7 @@ void loop()
                                 }
                                 else
                                 {
-                                    tft.drawString(pch, tft.width() / 2, tft.height() / 2);
+                                    tft.drawString(pch, tft.width(), tft.height() / 2);
                                     memcpy(lastnumber, pch, LCD_MAX_CHARS + 1); // Geht das auch? Etwas sicherer, falls pch länger ist als lastnumber // ja, geht
                                     lastnumber[LCD_MAX_CHARS + 1] = '\0';
                                     // strcpy(lastnumber, pch);
