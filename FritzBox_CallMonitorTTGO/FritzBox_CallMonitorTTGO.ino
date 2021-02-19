@@ -43,7 +43,7 @@
 #define RETRY_TIMEOUT 5000                 // Retry connection to FB every x seconds
 #define CALL_DURATION_UPDATE_INTERVAL 1000 // Update ongoing call duration on LCD
 #define LCD_MAX_CHARS 16                   // LCD max chars in one line
-#define LCD_ENABLE_DIM 1                   // If enabled, LCD backlight will only dim if unused. If disabled LCD backlight will turn off
+#define LCD_ENABLE_DIM 0                   // If enabled, LCD backlight will only dim if unused. If disabled LCD backlight will turn off
 #define LCD_DIM_TIMEOUT 10000              // Timeout for display dimmer after DISCONNECT
 #define DISPLAY_CALL_DURATION 1            // Enable or Disable display of call duration
 #define DEBUG 1                            // Enable serial debugging
@@ -461,7 +461,7 @@ void loop()
                                 char vbuff[6];
                                 memset(vbuff, 0, sizeof(vbuff));
                                 memcpy(vbuff, &pch[9], 5);
-                                tft.drawString(vbuff, tft.width() / 2, tft.height() / 2);
+                                tft.drawString(vbuff, tft.width() / 2, tft.height() / 2 - 16);
                             }
                             break;
                         case 1: // TYPE
@@ -480,7 +480,7 @@ void loop()
 
                             if (!lastcallwasmissedcall)
                             {
-                                tft.drawString(type, tft.width() / 2, tft.height() / 2 - 16);
+                                tft.drawString(type, tft.width() / 2, tft.height() / 2);
                             }
                             break;
                         case 2: // ConnectionID
@@ -491,12 +491,12 @@ void loop()
                             {
                                 if (strstr((char *)msg, ";;")) // Unknown caller?
                                 {
-                                    tft.drawString("Unknown caller", tft.width() / 2, tft.height() / 2);
+                                    tft.drawString("Unknown caller", tft.width() / 2, tft.height() / 2 + 16);
                                     strcpy(lastnumber, "Unknown caller\0");
                                 }
                                 else
                                 {
-                                    tft.drawString(pch, tft.width(), tft.height() / 2);
+                                    tft.drawString(pch, tft.width() / 2, tft.height() / 2 + 16);
                                     memcpy(lastnumber, pch, LCD_MAX_CHARS + 1); // Geht das auch? Etwas sicherer, falls pch länger ist als lastnumber // ja, geht
                                     lastnumber[LCD_MAX_CHARS + 1] = '\0';
                                     // strcpy(lastnumber, pch);
@@ -522,7 +522,7 @@ void loop()
                             {
                                 if (!lastcallwasmissedcall)
                                 {
-                                    tft.drawString(pch, tft.width() / 2, tft.height() / 2);
+                                    tft.drawString(pch, tft.width() / 2, tft.height() / 2 + 16);
                                 }
                                 if (DISPLAY_CALL_DURATION)
                                 {
@@ -534,7 +534,7 @@ void loop()
                         case 5:
                             if (strcmp(type, "CALL") == 0) // Calling number
                             {
-                                tft.drawString(pch, tft.width() / 2, tft.height() / 2);
+                                tft.drawString(pch, tft.width() / 2, tft.height() / 2 + 16);
                             }
                             break;
                         default:
