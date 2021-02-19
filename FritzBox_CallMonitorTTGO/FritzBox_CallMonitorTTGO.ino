@@ -22,7 +22,6 @@
  * - 2014-04-03: Initial internal release
  *
  * Open Topics / ToDo:
- * - Add neat red and green phone icons during call or for missed phone calls
  */
 
 /**** INCLUDES *********************************/
@@ -32,6 +31,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include "esp_adc_cal.h"
+#include "missed_call.h"
 /***********************************************/
 
 /**** CONFIGURATION ****************************/
@@ -100,7 +100,7 @@ void setup()
     showprice = false;
 
     missedcallcount = 0;
-    lastcallwasmissedcall = 0;
+    lastcallwasmissedcall = false;
 
     pinMode(CLEAR_MISSED_CALL_BUTTON_PIN, INPUT_PULLUP);
     //pinMode(MISSED_CALL_LED_PIN, OUTPUT);
@@ -231,10 +231,8 @@ void missedcallledon(char *lastnr)
 {
     missedcallcount++;
     //digitalWrite(MISSED_CALL_LED_PIN, HIGH);
-    // strcpy(lastmissednumber, lastnr);
     memcpy(lastmissednumber, lastnr, LCD_MAX_CHARS + 1);
     lcdmissedcall();
-    lcdstartdim();
 }
 /***********************************************/
 
@@ -243,8 +241,9 @@ void lcdmissedcall()
 {
     String callCountMessage = missedcallcount + String(" missed calls");
     lcdon();
-    tft.drawString(callCountMessage.c_str(), tft.width() / 2, tft.height() / 2);
-    tft.drawString(lastmissednumber, tft.width() / 2, tft.height() / 2 + 16);
+    tft.drawString(callCountMessage.c_str(), tft.width() / 2, tft.height() / 2 + 20);
+    tft.drawString(lastmissednumber, tft.width() / 2, tft.height() / 2 + 39);
+    tft.pushImage((tft.width() / 2) - (68 / 2), 10,  68, 62, missed_call);
     lcdstartdim();
 }
 /***********************************************/
