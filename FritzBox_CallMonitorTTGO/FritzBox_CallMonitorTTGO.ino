@@ -31,55 +31,32 @@
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include <Wire.h>
-#include "Button2.h"
 #include "esp_adc_cal.h"
 /***********************************************/
 
 /**** CONFIGURATION ****************************/
-#define LCD_BACKLIGHT_PIN 9                // LCD backlight positive PIN
 #define MISSED_CALL_LED_PIN A0             // LED notification if call was missed/not picked up
-#define CLEAR_MISSED_CALL_BUTTON_PIN 8     // Attached button to clear missed calls
+#define CLEAR_MISSED_CALL_BUTTON_PIN 0     // Attached button to clear missed calls (bottom button if usb port is on the right)
 #define CLEAR_MISESED_CALL_ON_NEW_ACTION 0 // Clear missed call state if new action was done
 #define FRITZBOX_HOSTNAME "fritz.box"      // Host name of FritzBox
 #define FRITZBOX_PORT 1012                 // Port with running FritzBox call monitor
 #define RETRY_TIMEOUT 5000                 // Retry connection to FB every x seconds
 #define CALL_DURATION_UPDATE_INTERVAL 1000 // Update ongoing call duration on LCD
-#define LCD_PIN_RS 7                       // Pin for initialization of LiquidCrystal library (RS)
-#define LCD_PIN_ENABLE 6                   // Pin for initialization of LiquidCrystal library (ENABLE)
-#define LCD_PIN_D4 5                       // Pin for initialization of LiquidCrystal library (D4)
-#define LCD_PIN_D5 4                       // Pin for initialization of LiquidCrystal library (D5)
-#define LCD_PIN_D6 3                       // Pin for initialization of LiquidCrystal library (D6)
-#define LCD_PIN_D7 2                       // Pin for initialization of LiquidCrystal library (D7)
 #define LCD_MAX_CHARS 16                   // LCD max chars in one line
 #define LCD_ENABLE_DIM 1                   // If enabled, LCD backlight will only dim if unused. If disabled LCD backlight will turn off
 #define LCD_DIM_TIMEOUT 10000              // Timeout for display dimmer after DISCONNECT
-#define LCD_DIM_PWM_VALUE 10               // analogWrite PWM value for dimmed LCD backlight
 #define DISPLAY_CALL_DURATION 1            // Enable or Disable display of call duration
 #define DEBUG 1                            // Enable serial debugging
 #define SERIAL_BAUD_RATE 115200            // Baud rate for serial communication
 #define PRICEPERMINUTE 0.025               // Price per minute in Euro
 #define CHECKCONNECTION 10000              // Milliseconds
+#define ADC_EN 14                          //ADC_EN is the ADC detection enable port
 //#define ENABLE_DISPLAY_TIME 1
 /***********************************************/
 
-/* crap from example */
-#define ADC_EN 14 //ADC_EN is the ADC detection enable port
-#define ADC_PIN 34
-#define BUTTON_1 35
-#define BUTTON_2 0
-
-TFT_eSPI tft = TFT_eSPI(135, 240); // Invoke custom library
-Button2 btn1(BUTTON_1);
-Button2 btn2(BUTTON_2);
-
-char buff[512];
-int vref = 1100;
-int btnCick = false;
-/* crap from example END */
-
 /**** GLOBAL VARIABLES *************************/
+TFT_eSPI tft = TFT_eSPI(135, 240);         // Invoke custom library
 WiFiClient client;
-
 
 unsigned long next;
 unsigned long callstart;
@@ -97,6 +74,24 @@ boolean lastcallwasmissedcall;
 boolean showprice;
 /***********************************************/
 
+/**** FUNCTION DECLARATIONS*********************/
+void setup();
+void lcdsplash();
+void resetEthernet();
+void lcdon();
+void lcddim();
+void lcdoff();
+void lcdstartdim();
+void lcdconnecting();
+void missedcallledon(char *lastnr);
+void lcdmissedcall();
+void missedcallledoff();
+void lcddisplaytime(unsigned long t);
+void espDelay(int ms);
+void WiFi_Setup();
+void loop();
+/***********************************************/
+
 void setup()
 {
     next = 0;
@@ -107,8 +102,7 @@ void setup()
     missedcallcount = 0;
     lastcallwasmissedcall = 0;
 
-    //pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
-    //pinMode(CLEAR_MISSED_CALL_BUTTON_PIN, INPUT_PULLUP);
+    pinMode(CLEAR_MISSED_CALL_BUTTON_PIN, INPUT_PULLUP);
     //pinMode(MISSED_CALL_LED_PIN, OUTPUT);
 
     lcdon();
@@ -150,13 +144,9 @@ void setup()
     tft.fillScreen(TFT_GREEN);
     espDelay(1000);
 
-    button_init();
-
     /*
     tft.fillScreen(TFT_BLACK);
     tft.setTextDatum(MC_DATUM);
-
-
 
     tft.drawString("LeftButton:", tft.width() / 2, tft.height() / 2 - 16);      // hi
     tft.drawString("[WiFi Scan]", tft.width() / 2, tft.height() / 2 );
@@ -229,7 +219,6 @@ void lcdoff()
     {
         lcdsplash();
     }
-    //digitalWrite(LCD_BACKLIGHT_PIN, LOW);
 }
 /***********************************************/
 
@@ -348,26 +337,6 @@ void espDelay(int ms)
     esp_light_sleep_start();
 }
 
-void button_init()
-{
-    btn1.setPressedHandler([](Button2 &b) {
-        Serial.println("Detect Voltage..");
-        btnCick = true;
-    });
-
-    btn2.setPressedHandler([](Button2 &b) {
-        btnCick = false;
-        Serial.println("btn press wifi scan");
-        //wifi_scan();
-    });
-}
-
-void button_loop()
-{
-    btn1.loop();
-    btn2.loop();
-}
-
 void WiFi_Setup()
 {
     WiFiManager wifiManager; // Connect to Wi-Fi
@@ -394,8 +363,6 @@ void WiFi_Setup()
 void loop()
 {
 
-    button_loop();
-
     if ((millis() - next) > RETRY_TIMEOUT)
     {
         next = millis();
@@ -419,12 +386,14 @@ void loop()
                 lcddim();
             }
 
-            /*client.println("DATA from Client");
-       while(client.available()==0)
-       {
-       if (next - millis() < 0)
-       goto close;
-       }*/
+#if 0
+            client.println("DATA from Client");
+            while(client.available()==0)
+            {
+                if (next - millis() < 0)
+                goto close;
+            }
+#endif
             while (client.connected())
             {
                 // if in a call
@@ -591,8 +560,11 @@ void loop()
                     client.write("x");
                 }
             }
-            //close:
-            //disconnect client
+#if 0
+            close:
+                disconnect client
+#endif
+
 #ifdef DEBUG
             Serial.println(F("Disconnected"));
 #endif
