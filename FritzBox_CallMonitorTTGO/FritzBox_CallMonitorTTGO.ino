@@ -1,7 +1,6 @@
 /*
  * FritzBox CallMonitor
  * --------------------
- * Copyright (C) 2021 by Ralph Rakers - rakete1@mail.de
  * Copyright (C) 2014 by Tobias Link - ranger81@dsuclan.de - www.ranger81.de
  *
  * This sketch can be used on a TTGO T-Display ESP32. It provides a simple
